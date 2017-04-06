@@ -7,6 +7,12 @@ Pour copier ce repertoire distant sur la machine en local
 
 git clone https://github.com/firas16/MPH.git
 
-Pour mettre à jour le répertoire local à partir du répertoire distant: 'git pull'
+Pour mettre à jour le répertoire local à partir du répertoire distant: 
 
-Pour envoyer ses modifications dans le répertoire distant: 'git push'
+```git pull
+```
+
+Pour envoyer ses modifications dans le répertoire distant: 
+
+```git push
+```
