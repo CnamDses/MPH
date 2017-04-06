@@ -24,6 +24,10 @@ def extract_test_train_datasets(data):
 	test = df[~msk]
 	return (train, test)
 
+#création de la métrique : pourcentage des prédictions correctes
+def score(y_true, y_pred): 
+    return np.mean(np.abs(y_true - y_pred)) * 100
+
 # Import des données
 data = get_data(False)
 # Diviser les données en échantilons d'apprentissage et de tests
@@ -50,9 +54,7 @@ for c in feat_cat:
 #Création du modéle
 train['Y'] = train['ColonneApredire'] #changement de la colonne a predire
 
-#création de la métrique : pourcentage des prédictions correctes
-def score(y_true, y_pred): 
-    return np.mean(np.abs(y_true - y_pred)) * 100
+
 	
 # Cross validation pour le calibrage du modéle de prédiction
 model = "RandomForest"
