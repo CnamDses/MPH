@@ -17,10 +17,8 @@ def get_data(SAS):
 
 #extraction échantillon d'apprentissage et de test
 def extract_test_train_datasets(data):
-	df = pd.DataFrame(np.random.randn(4000000, 2))
-	msk = np.random.rand(len(df)) < 0.8
-	train = df[msk]
-	test = df[~msk]
+	from sklearn.model_selection import train_test_split
+	train, test = train_test_split(data, test_size = 0.2)
 	return (train, test)
 
 #création de la métrique : pourcentage des prédictions correctes
@@ -30,9 +28,10 @@ def score(y_true, y_pred):
 #fitting model
 def fit_model(model, NBROUND, FEATURES, train, Y):
 	err = 0
-	if(model = "RF"):
+	if(model == "RF"):
 		clf = RandomForestRegressor()
-		else clf = linear_model.LogisticRegression()
+	else: 
+		clf = linear_model.LogisticRegression()
 
 	for train_index, test_index in KFold(train.shape[0], n_folds=NBROUND):
 		y = train[Y]
