@@ -6,7 +6,7 @@ Ce script a pour but de tester des méthodes de prédiction dans le cadre du pro
 Pour copier ce repertoire distant sur la machine en local
 
 ```
-git clone https://github.com/firas16/MPH.git
+git clone https://github.com/CnamDses/MPH.git
 ```
 
 Pour mettre à jour le répertoire local à partir du répertoire distant: 
