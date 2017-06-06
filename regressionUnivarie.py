@@ -15,6 +15,9 @@ def get_data(SAS):
 		data = pd.read_csv('D://mnist/train.csv', encoding='iso-8859-1', sep=';')
 	return data
 
+
+
+
 #extraction échantillon d'apprentissage et de test
 def extract_test_train_datasets(data):
 	from sklearn.model_selection import train_test_split
@@ -26,20 +29,16 @@ def score(y_true, y_pred):
     return np.mean(np.abs(y_true - y_pred)) * 100
 
 
-def transform_data(train):
-	#filter unused columns
-	train_filtered = train.filter(regex='$')
-
-	#transform categorical variables
-	# features numériques
 	feat_age = train.columns.values.filter(regex='age')
-	feat_num = train.columns.values.filter(regex='')
+	feat_num = train.columns.values.filter(regex='ben')
 	# features date
 	feat_dates = train.columns.values.filter(regex='')
 	# features catégorielles
 	feat_cat = train.columns.values.filter(regex='')
+def transform_data(train):
+	#filter unused columns
+	train_filtered = train.filter(regex='$')
 
-	#Encodage des features catégorielles
 	for c in feat_cat:
     	le = LabelEncoder()
     	le.fit(train[c])
@@ -64,13 +63,42 @@ def fit_logistic_regression_univ(train, Y):
 
 data = get_data(False)
 
-(train,test) = extract_test_train_datasets(data)
+#remplacement des valeurs manquantes par 0 (A discuter avec tout le monde)
+data = data.fillna(0)
 
 #Préparation des données
+#Construction de la variable à expliquer
+data['urgence_sans_hospit_2014'] = np.where(data['nb_ush_trimestre_1', 'nb_ush_trimestre_2', 'nb_ush_trimestre_3', 'nb_ush_trimestre_4'].max(axis=1) >= 1, 1, 0)
+								
+data['urgence_avec_hospit_2014'] = np.where(data['nb_uah_trimestre_1', 'nb_uah_trimestre_2', 'nb_uah_trimestre_3', 'nb_uah_trimestre_4'].max(axis=1) >= 1, 1, 0)
 
-	
-#Construction du modéle de prédiction
-fit_model("RF", 5, feat_cat + feat_num, train, "NomColonneApredire")
+data['urgence_sans_hospit_2013'] = np.where(data['nb_ush_trimestre_m1', 'nb_ush_trimestre_m2', 'nb_ush_trimestre_m3', 'nb_ush_trimestre_m4'].max(axis=1) >= 1, 1, 0)
+							
+data['urgence_avec_hospit_2013'] = np.where(data['nb_uah_trimestre_m1', 'nb_uah_trimestre_m2', 'nb_uah_trimestre_m3', 'nb_uah_trimestre_m4'].max(axis=1) >= 1, 1, 0)
 
+#codage des variables categorielles
+feat_cat = data.filter(regex = 'cla_age').columns.values
+from sklearn.preprocessing import LabelEncoder
+for col in feat_cat:
+	le = LabelEncoder()
+	le.fit(data[c])
+	data[c] = le.transform(data[c])
+
+
+
+
+
+#Construction du modéle univarié
+from sklearn.feature_selection import f_classif
+X = data
+Y = data['urgence_avec_hospit_2014']
+feat = np.concatenate(feat_cat,feat_num)
+
+ # Test with Anova + LogisticRegression
+clf = LogisticRegression()
+selector = SelectKBest(f_classif, k=3)
+selector.fit(X,Y)
+for (s,n) in (feat,selector.pvalues_):
+	print (s,n)
 
 
