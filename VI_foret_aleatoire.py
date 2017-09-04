@@ -43,9 +43,9 @@ print "#######\n-- Variable Selection Using Random Forests --\n#######"
 
 
      # on importe le package 
-     # 2 techniques, laquelle choisir?       
-     # surement du python 2.7 ?
-     #=> Firas?
+     # 3 techniques, laquelle choisir?       
+     # on prends la 3ème avec le package écrit "en dur" dans le programme
+"""
 
  from setuptools import setup 
  
@@ -71,38 +71,16 @@ pip install rf_perm_feat_import
 from .RFFeatureImportance import PermutationImportance
 
 
+     # OU (?) :
+"""
+     #=> appeler le prog  "package rf_perm_feat_import version 2.X.py"
+      #ou appeler le prog  "package rf_perm_feat_import version 3.X.py"
+      
 
- 
 
      # j'importe les données et les packages dont on a besoin 
      # => j'ai utiliser le "main" du 1er sept 2017
-     #=> Firas?
-
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import LabelEncoder
-from sklearn.cross_validation import KFold
-from sklearn.ensemble import RandomForestRegressor
-import matplotlib.pyplot as plt
-%matplotlib inline 
-import seaborn as sns # pip install seaborn
-
-
-
-def get_data(SAS):
-	if SAS:
-    	data = pd.read_sas('/data.SAS7bDAT', encoding='utf-8', format=True, sep=';')
-	else:
-		data = pd.read_csv('D://mnist/train.csv', encoding='utf-8', sep=';')
-	return data
-
-
-def extract_test_train_datasets(data):
-	df = pd.DataFrame(np.random.randn(4000000, 2))
-	msk = np.random.rand(len(df)) < 0.8
-	train = df[msk]
-	test = df[~msk]
-	return (train, test)
+     #=> Firas  
  
     
 # FIras dernière version du programme à ajouter :
@@ -111,147 +89,132 @@ def extract_test_train_datasets(data):
    X = train[FEATURES] 
 
 
-     #  on lance la seleciton de variable
+     #  on lance la selection de variables
 
    
-   #  eventuellement ntree = 2000 et pour mtry on peut surement tester sqrt(250)
+   #  on test avec ntree = 2000 et pour mtry on peut surement tester sqrt(250)
 
 
 def lancement_une_foret(X, y,ntree,mtry):
     
-rfR = RandomForestRegressor(n_estimators=ntree, max_features=mtry,oob_score=True)
-rfR.fit(X, y)
+    rfR = RandomForestRegressor(n_estimators=ntree, max_features=mtry,oob_score=True)
+    rfR.fit(X, y)
+    
+    
+    #print "\n"
+    #print "#######\n--VI données par sklearn--\n#######"
+    #print "Weighted Avg Information Gain feature importances:"
+    
+    VI_imp_def=rfR.feature_importances_
+    
+    #print "\n"
+    #print "#######\n--VI données par le package erreur oob --\n#######"
+    #print "Permutation importances:"
+    oobR = PermutationImportance()
+    VI_imp_oob=oobR.featureImportances(rfR, X, y, 1)
+    
+    return VI_imp_def,VI_imp_def
 
 
-#print "\n"
-#print "#######\n--VI données par sklearn--\n#######"
-#print "Weighted Avg Information Gain feature importances:"
 
-VI_imp_def=rfR.feature_importances_
+def boucle_foret(X, y,ntree,mtry,NombreDeForet,nom):
+        
+    # besoin d'initialisation des variables
+    VI_imp_def_sortie=list()
+    VI_imp_oob_sortie=list()
+    
+     
+    
+az=[oobC.featureImportances(rfC, X, y, 5)]
 
-#print "\n"
-#print "#######\n--VI données par le package erreur oob --\n#######"
-#print "Permutation importances:"
-oobR = PermutationImportance()
-VI_imp_oob=oobR.featureImportances(rfR, train, test, 1)
-
- return VI_imp_def,VI_imp_def
-
-
-# besoin d'initialisation ?
-    #=> Firas?
-
-# on lance 50 fois 
-	for i in range(50):
-
-... lancement_une_foret(train, test,2000,15)
-... 
-...  VI_imp_def_sortie=VI_imp_def_sortie, VI_imp_def
-...  VI_imp_oob_sortie=VI_imp_oob_sortie, VI_imp_oob
-  
- 
-#moyenne
-moyenne_VI_imp_def_sortie=np.mean(VI_imp_def_sortie)
-moyenne_VI_VI_imp_oob_sortie=np.mean(VI_imp_oob_sortie)
-
-#ecart-type
-ecart_type_VI_imp_def_sortie=np.std(VI_imp_def_sortie)
-ecart_type_VI_VI_imp_oob_sortie=np.std(VI_imp_oob_sortie)
+    az_temp=[oobC.featureImportances(rfC, X, y, 5)]
 
 
+
+    # on lance NombreDeForet fois 
+    for i in range(NombreDeForet):
+    
+        lancement_une_foret(X, y,ntree,mtry)
+         
+        VI_imp_def_sortie.append(VI_imp_def)
+        VI_imp_oob_sortie.append(VI_imp_oob)
+               
+        
+    
+    
+    
+    # VI_imp_def_sortie et VI_imp_oob_sortie sont des listes de Array
+        
+         
+    # besoin d'initialisation des variables   
+        # V1
+    moyenne_VI_imp_def_sortie=list()
+    ecart_type_VI_imp_def_sortie=list() 
+        # V2
+    moyenne_VI_imp_oob_sortie=list()
+    ecart_type_VI_imp_oob_sortie=list()
+    
+    i=0
+    while i < len(VI_imp_def_sortie[1]):
+        # V1
+        moyenneI = np.mean(VI_imp_def_sortie[i] ) 
+        moyenne_VI_imp_def_sortie.append(moyenneI)
+        
+        EcartTypeI = np.std(VI_imp_def_sortie[i] ) 
+        ecart_type_VI_imp_def_sortie.append(EcartTypeI)
+    
+        # V2
+        moyenneI = np.mean(VI_imp_oob_sortie[i] ) 
+        moyenne_VI_imp_oob_sortie.append(moyenneI)
+        
+        EcartTypeI = np.std(VI_imp_oob_sortie[i] ) 
+        ecart_type_VI_imp_oob_sortie.append(EcartTypeI)
+    
+        i=i+1
+    
+     
+    
+    #moyenne et écart type des 2 sortes de VI pour les 50 forets 
+    
     #données à récuperer
-    #=> Firas?
+    print "\n"
+    print "#######\n--VI données par sklearn--\n#######"
+    print "Weighted Avg Information Gain feature importances:"
     
-    
-    
-    
-	for i in range(50):
-
-... lancement_une_foret(train, test,2000,50)
-... 
-...  VI_imp_def_sortie2=VI_imp_def_sortie2, VI_imp_def
-...  VI_imp_oob_sortie2=VI_imp_oob_sortie2, VI_imp_oob
-  
+    print moyenne_VI_imp_def_sortie    
  
-#moyenne
-moyenne_VI_imp_def_sortie2=np.mean(VI_imp_def_sortie)
-moyenne_VI_VI_imp_oob_sortie2=np.mean(VI_imp_oob_sortie)
-
-#ecart-type
-ecart_type_VI_imp_def_sortie2=np.std(VI_imp_def_sortie)
-ecart_type_VI_VI_imp_oob_sortie2=np.std(VI_imp_oob_sortie)
-
-
-    #données à récuperer
-    #=> Firas?
+    print "écart type"
     
-	for i in range(50):
-
-... lancement_une_foret(train, test,2000,100)
-... 
-...  VI_imp_def_sortie3=VI_imp_def_sortie3, VI_imp_def
-...  VI_imp_oob_sortie3=VI_imp_oob_sortie3, VI_imp_oob
-  
+    print ecart_type_VI_imp_def_sortie 
  
-#moyenne
-moyenne_VI_imp_def_sortie3=np.mean(VI_imp_def_sortie)
-moyenne_VI_VI_imp_oob_sortie3=np.mean(VI_imp_oob_sortie)
 
-#ecart-type
-ecart_type_VI_imp_def_sortie3=np.std(VI_imp_def_sortie)
-ecart_type_VI_VI_imp_oob_sortie3=np.std(VI_imp_oob_sortie)
-
-
-    #données à récuperer
-    #=> Firas?
-
-
-
-
+    print "\n"
+    print "#######\n--VI données par le package erreur oob --\n#######"
+    print "Permutation importances:"
     
-	for i in range(50):
-
-... lancement_une_foret(train, test,100,100)
-... 
-...  VI_imp_def_sortie4=VI_imp_def_sortie4, VI_imp_def
-...  VI_imp_oob_sortie4=VI_imp_oob_sortie4, VI_imp_oob
-  
- 
-#moyenne
-moyenne_VI_imp_def_sortie4=np.mean(VI_imp_def_sortie)
-moyenne_VI_VI_imp_oob_sortie4=np.mean(VI_imp_oob_sortie)
-
-#ecart-type
-ecart_type_VI_imp_def_sortie4=np.std(VI_imp_def_sortie)
-ecart_type_VI_VI_imp_oob_sortie4=np.std(VI_imp_oob_sortie)
-
-
-    #données à récuperer
-    #=> Firas?
+    print (moyenne_VI_imp_oob_sortie)
     
-	for i in range(50):
+    print "écart type"
+    
+    print (ecart_type_VI_imp_oob_sortie)
 
-... lancement_une_foret(train, test,500,100)
-... 
-...  VI_imp_def_sortie5=VI_imp_def_sortie5, VI_imp_def
-...  VI_imp_oob_sortie5=VI_imp_oob_sortie5, VI_imp_oob
-  
  
-#moyenne
-moyenne_VI_imp_def_sortie5=np.mean(VI_imp_def_sortie)
-moyenne_VI_VI_imp_oob_sortie5=np.mean(VI_imp_oob_sortie)
-
-#ecart-type
-ecart_type_VI_imp_def_sortie5=np.std(VI_imp_def_sortie)
-ecart_type_VI_VI_imp_oob_sortie5=np.std(VI_imp_oob_sortie)
+      return None
 
 
-    #données à récuperer
-    #=> Firas?
-
-
-
-
+# on teste différente cas pour vérif les paramétres et robustesse
+    
+boucle_foret(X, y,2000,15,50,V1):
+    
+boucle_foret(X, y,2000,50,50,V1):
+    
+boucle_foret(X, y,2000,100,50,V1):
+    
+boucle_foret(X, y,500,100,50,V1):
+    
+boucle_foret(X, y,100,100,50,V1):
+    
+       
 
 
 
