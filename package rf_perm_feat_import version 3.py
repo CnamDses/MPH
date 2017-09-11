@@ -147,8 +147,18 @@ class PermutationImportance(object):
 
         # subset the original labels by the final out-of-bag indices, incase
         # some points were not included
-        oobIndices = np.array(oobForestPreds.keys())
-        yOob = self.y[oobIndices]
+        oobIndices = np.array(list(oobForestPreds.keys()))
+        yOob = self.y[oobIndices]      
+        
+        '''
+        On ajoute list() par rapport à la version python 2.X pour l'oobIndices
+        The reason np.array(Samples.values()) doesn't give what you expect in Python 3 is that in Python 3, 
+        the values() method of a dict returns an iterable view, whereas in Python 2, it returns an actual 
+        list of the keys.
+
+        keys = np.array(list(Samples.keys())) will actually work in Python 2.7 as well, and will make your 
+        code more version agnostic. But the extra call to list() will slow it down marginally. 
+        '''
 
         ensemblePreds = np.zeros(len(oobIndices))
 
@@ -197,8 +207,7 @@ class PermutationImportance(object):
         return unsampledIndices
     
     
-    
-    
+     
 
         '''
         exemples :        
