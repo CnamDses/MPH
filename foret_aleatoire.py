@@ -15,6 +15,7 @@ Random Forests sur toutes les variables pour test
 print "\n"
 print "#######\n-- Random Forests V1 --\n#######"
 
+print "#######\n-- on test pour voir ce que ça donne dans un 1er temps --\n#######"
  
  
 
@@ -63,9 +64,16 @@ rfR = RandomForestRegressor(n_estimators=2000, max_features=15,oob_score=True)
 rfR.fit(X, y)
  
 
-rfR.feature_importances_
-rfR.predict(X)
-rfR.score(X)
+    # sorties sur la VI des variables
+print (rfR.feature_importances_)
+
+    # la sortie predict
+print (rfR.predict(X))
+
+    # le R² de la prédiction
+print (rfR.score(X))
+
+
 
 
 
